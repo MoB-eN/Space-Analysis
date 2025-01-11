@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Space Data Analysis Platform</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+
+
+        :root {
+            --bg-primary: #0C0F1D;
+            --bg-secondary: #161B2E;
+            --text-primary: #E5E7EB;
+            --text-secondary: #9CA3AF;
+            --accent: #4F46E5;
+            --accent-light: #818CF8;
+            --border: rgba(79, 70, 229, 0.2);
+            --success: #10B981;
+            --error: #EF4444;
+            --warning: #F59E0B;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(125deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+            color: var(--text-primary);
+            font-family: 'Inter', system-ui, sans-serif;
+            margin: 0;
+            min-height: 100vh;
+            line-height: 1.6;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border);
+            border-radius: 1.5rem;
+            padding: 2.5rem;
+            margin-bottom: 2rem;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, transparent, rgba(79, 70, 229, 0.1), transparent);
+            transform: translateX(-100%);
+            transition: transform 0.6s;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .card:hover::before {
+            transform: translateX(100%);
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(to right, var(--accent-light), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        h2 {
+            font-size: 1.8rem;
+            color: var(--text-primary);
+            margin-bottom: 1.5rem;
+            position: relative;
+            padding-bottom: 0.5rem;
+        }
+
+        h2::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 50px;
+            height: 3px;
+            background: var(--accent);
+            border-radius: 3px;
+        }
+
+        .upload-form, .analysis-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            width: 100%;
+            height: 150px;
+            border: 2px dashed var(--border);
+            border-radius: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .file-input-wrapper:hover {
+            border-color: var(--accent);
+            background: rgba(79, 70, 229, 0.1);
+        }
+
+        .file-input {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .file-input-label {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+            color: var(--text-secondary);
+        }
+
+        .file-input-label i {
+            font-size: 2rem;
+            color: var(--accent);
+        }
+
+        select {
+            padding: 1rem;
+            border-radius: 0.75rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        select:hover, select:focus {
+            border-color: var(--accent);
+            background: rgba(19, 15, 94, 0.612);
+        }
+
+        button {
+            padding: 1rem 2rem;
+            border-radius: 0.75rem;
+            background: var(--accent);
+            border: none;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        button:hover {
+            background: var(--accent-light);
+            transform: translateY(-2px);
+        }
+
+        .data-preview {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin-top: 1.5rem;
+            overflow: hidden;
+        }
+
+        .data-preview th, .data-preview td {
+            padding: 1rem;
+            border: 1px solid var(--border);
+            text-align: left;
+        }
+
+        .data-preview th {
+            background: rgba(79, 70, 229, 0.1);
+            font-weight: 600;
+            position: relative;
+        }
+
+        .data-preview tr:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .visualization-container {
+            background: rgba(12, 15, 29, 0.7);
+            padding: 2rem;
+            border-radius: 1rem;
+            margin-top: 1.5rem;
+            overflow: hidden;
+            position: relative;
+            border: 1px solid var(--border);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(79, 70, 229, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(79, 70, 229, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(79, 70, 229, 0); }
+        }
+
+        .stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+            perspective: 1000px;
+            transform-style: preserve-3d;
+        }
+
+        .star {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            animation: starMove 20s infinite linear;
+            opacity: 0;
+        }
+
+        @keyframes starMove {
+            0% {
+                transform: translateZ(0) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateZ(1000px) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        .dust {
+            pointer-events: none;
+            position: fixed;
+            width: 4px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 50%;
+            transition: all 0.1s ease;
+            z-index: 2;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .stat-item {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 1rem;
+            border-radius: 0.75rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            transition: transform 0.3s ease;
+        }
+
+        .stat-item:hover {
+            transform: translateY(-2px);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        .stat-value {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            .card {
+                padding: 1.5rem;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+
+            h2 {
+                font-size: 1.5rem;
+            }
+
+            .stats {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        
+
+        
+
+        .dust {
+            position: fixed;
+            pointer-events: none;
+            z-index: 9999;
+        }
+
+        .dust-particle {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            pointer-events: none;
+            transition: opacity 0.2s ease;}
+    </style>
+</head>
+<body>
+    <div class="stars"></div>
+    </div>
+
+    <div class="container">
+
+        
+        <!-- File Upload -->
+        <div class="card">
+            <h1>Space Data Analysis Platform</h1>
+            <form method="post" enctype="multipart/form-data" class="upload-form">
+                {% csrf_token %}
+                <div class="file-input-wrapper">
+                    <input type="file" name="file" accept=".csv" required class="file-input" id="file-input">
+                    <div class="file-input-label">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <span>Drag and drop your CSV file here or click to browse</span>
+                    </div>
+                </div>
+                <button type="submit">
+                    <i class="fas fa-upload"></i>
+                    Upload Dataset
+                </button>
+            </form>
+        </div>
+
+        {% if error %}
+        <div class="error-message">
+            <i class="fas fa-exclamation-circle"></i>
+            {{ error }}
+        </div>
+        {% endif %}
+
+        {% if basic_info %}
+        <!-- Dataset Info -->
+        <div class="card">
+            <h2>Dataset Overview</h2>
+            <div class="stats">
+                <div class="stat-item">
+                    <span class="stat-label">Total Rows</span>
+                    <span class="stat-value">{{ basic_info.rows }}</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Total Columns</span>
+                    <span class="stat-value">{{ basic_info.columns }}</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Memory Usage</span>
+                    <span class="stat-value">{{ basic_info.memory }}</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Missing Values</span>
+                    <span class="stat-value">{{ basic_info.total_missing }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Data Preview -->
+        <div class="card">
+            <h2>Data Preview</h2>
+            <div style="overflow-x: auto;">
+                <table class="data-preview">
+                    <thead>
+                        <tr>
+                            {% for column in columns %}
+                            <th>{{ column }}</th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in data_preview %}
+                        <tr>
+                            {% for value in row %}
+                            <td>{{ value }}</td>
+                            {% endfor %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Analysis Options -->
+        <div class="card">
+            <h2>Analysis Options</h2>
+            <!-- Single Column Analysis -->
+            <form method="post" class="analysis-form">
+                {% csrf_token %}
+                <select name="analyze_column" required>
+                    <option value="">Select Column</option>
+                    {% for column in columns %}
+                    <option value="{{ column }}">{{ column }}</option>
+                    {% endfor %}
+                </select>
+                <button type="submit">
+                    <i class="fas fa-chart-bar"></i>
+                    Analyze Column
+                </button>
+            </form>
+
+            <!-- X vs Y Analysis -->
+            <form method="post" class="analysis-form">
+                {% csrf_token %}
+                <select name="x_column" required>
+                    <option value="">Select X Column</option>
+                    {% for column in columns %}
+                    <option value="{{ column }}">{{ column }}</option>
+                    {% endfor %}
+                </select>
+                <select name="y_column" required>
+                    <option value="">Select Y Column</option>
+                    {% for column in columns %}
+                    <option value="{{ column }}">{{ column }}</option>
+                    {% endfor %}
+                </select>
+                <button type="submit" name="analyze_xy">
+                    <i class="fas fa-chart-line"></i>
+                    Analyze X vs Y
+                </button>
+            </form>
+        </div>
+        {% endif %}
+
+        <!-- Column Analysis Results -->
+        {% if column_analysis %}
+        <div class="card">
+            <h2>Analysis Results: {{ selected_column }}</h2>
+            <div class="visualization-container">
+                {{ column_analysis.visualizations|safe }}
+            </div>
+            <div class="stats">
+                <div class="stat-item">
+                    <span class="stat-label">Type</span>
+                    <span class="stat-value">{{ column_analysis.type }}</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Missing Values</span>
+                    <span class="stat-value">{{ column_analysis.missing }} ({{ column_analysis.missing_percent }}%)</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Unique Values</span>
+                    <span class="stat-value">{{ column_analysis.unique }} ({{ column_analysis.unique_percent }}%)</span>
+                </div>
+                {% if column_analysis.mean %}
+                <div class="stat-item">
+                    <span class="stat-label">Mean</span>
+                    <span class="stat-value">{{ column_analysis.mean|floatformat:2 }}</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Median</span>
+                    <span class="stat-value">{{ column_analysis.median|floatformat:2 }}</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Standard Deviation</span>
+                    <span class="stat-value">{{ column_analysis.std|floatformat:2 }}</span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+        {% if xy_visualization %}
+        <!-- X vs Y Analysis Results -->
+        <div class="card">
+            <h2>X vs Y Analysis: {{ selected_x }} vs {{ selected_y }}</h2>
+            <div class="visualization-container">
+                {{ xy_visualization|safe }}
+            </div>
+            {% if xy_stats %}
+            <div class="stats">
+                {% if xy_stats.correlation %}
+                <div class="stat-item">
+                    <span class="stat-label">Correlation</span>
+                    <span class="stat-value">{{ xy_stats.correlation|floatformat:3 }}</span>
+                </div>
+                {% else %}
+                <div class="stat-item">
+                    <span class="stat-label">Chi-square</span>
+                    <span class="stat-value">{{ xy_stats.chi2|floatformat:2 }}</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">P-value</span>
+                    <span class="stat-value">{{ xy_stats.p_value|floatformat:4 }}</span>
+                </div>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+
+    <script>
+        
+        // Create stars background
+        const stars = document.querySelector('.stars');
+        for (let i = 0; i < 200; i++) {
+            const star = document.createElement('div');
+            star.className = 'star';
+            star.style.width = Math.random() * 3 + 'px';
+            star.style.height = star.style.width;
+            star.style.left = Math.random() * 100 + 'vw';
+            star.style.top = Math.random() * 100 + 'vh';
+            star.style.animationDelay = Math.random() * 3 + 's';
+            stars.appendChild(star);
+        }
+
+        // File input handling
+        const fileInput = document.getElementById('file-input');
+        const fileLabel = document.querySelector('.file-input-label');
+        
+        fileInput.addEventListener('change', function(e) {
+            if (this.files && this.files[0]) {
+                fileLabel.innerHTML = `
+                    <i class="fas fa-file-csv"></i>
+                    <span>${this.files[0].name}</span>
+                `;
+            }
+        });
+
+        // Drag and drop handling
+        const dropZone = document.querySelector('.file-input-wrapper');
+
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropZone.addEventListener(eventName, highlight, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, unhighlight, false);
+        });
+
+        function highlight(e) {
+            dropZone.classList.add('highlight');
+        }
+
+        function unhighlight(e) {
+            dropZone.classList.remove('highlight');
+        }
+
+        dropZone.addEventListener('drop', handleDrop, false);
+
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            fileInput.files = files;
+            
+            if (files && files[0]) {
+                fileLabel.innerHTML = `
+                    <i class="fas fa-file-csv"></i>
+                    <span>${files[0].name}</span>
+                `;
+            }
+        }
+
+        
+
+        // Add smooth scrolling to analysis results
+        document.querySelectorAll('button[type="submit"]').forEach(button => {
+            button.addEventListener('click', function() {
+                setTimeout(() => {
+                    const results = document.querySelector('.card:last-child');
+                    if (results) {
+                        results.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                }, 100);
+            });
+        });
+
+
+        
+        
+    </script>
+</body>
+</html>
